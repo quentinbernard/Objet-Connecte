@@ -1,0 +1,19 @@
+title Fredzer: Gestion sécurité
+
+Raspberry Zero (client)->Raspberry Pi 3 (serveur): Bouton 1 -> mode sécurité
+note right of Raspberry Zero (client): Signal socket 110
+note right of Raspberry Pi 3 (serveur): Activation Sécurité
+Raspberry Pi 3 (serveur)->Processus alarme: Signal mouvement (Bouton serveur) -> activation alarme
+note right of Processus alarme: Jouer avec le bouton ne coupera pas l'alarme
+Raspberry Zero (client)->Raspberry Pi 3 (serveur): Bouton 1 (socket) -> mode sécurité
+note right of Raspberry Zero (client): Signal socket 111
+note right of Raspberry Pi 3 (serveur): Désactivation Sécurité
+Raspberry Pi 3 (serveur)->Processus alarme: SIGUSR1 -> désactivation alarme
+note right of Processus alarme: Jouer avec le bouton serveur ne réactivera pas l'alarme
+
+Raspberry Zero (client)->Raspberry Pi 3 (serveur): Bouton 2 (socket) -> mode localisation
+note right of Raspberry Zero (client): Signal socket 120
+note left of Raspberry Pi 3 (serveur): Allumer LED
+Raspberry Zero (client)->Raspberry Pi 3 (serveur): Bouton 2 (socket) -> mode localisation
+note right of Raspberry Zero (client): Signal socket 121
+note left of Raspberry Pi 3 (serveur): Eteindre LED
