@@ -2,15 +2,23 @@
 ** Gestion multi client
 **
 */
-
+#include <wiringPi.h>
 #include "stream.h"
 
 int createSocketEcoute(char*,int);
 void dialogueAvecClt(int sockDial);
 int acceptConnect(int);
 int setupAlarme(void);
+void setup(void);
 
+//PID alarme
 int pidAlarme;
+
+//Broche LED sortie -> 15 = 3
+const int PIN15 = 3;
+
+//Broche LED entrée -> 16 = 4
+const int PIN16 = 4;
 
 int main(){
 
@@ -21,6 +29,8 @@ int main(){
     sockEcoute = createSocketEcoute(IP_SVC,PORT_SVC);
 
     CHECK(retour = setupAlarme(),"Probleme setup alarme");
+    wiringPiSetup();
+    setup();
 
     //Boucle de service
     while(1){
@@ -158,7 +168,13 @@ void traiterRequete200(requete req, reponse *rep, int* ledOn){
 	sprintf(rep->msg, "Reponse a la requete %u", req.code);
 	rep->code = req.code + 10;
 
-	//TODO LED
+	if(*ledOn==1){
+		digitalWrite(PIN15,LOW);
+		*ledOn = 0;
+	}else{
+		digitalWrite(PIN15,HIGH);
+		*ledOn = 1;
+	}
 }
 
 
@@ -204,6 +220,17 @@ int setupAlarme(void){
 	return 0;
 }
 
+/**
+ * setup
+ * initialise les ports GPIO pour la LED
+*/
+void setup(void){
+
+	pinMode(PIN15, OUTPUT);
+	pinMode(PIN16, INPUT);
+	//Make sure it is already at LOW
+	digitalWrite(PIN15, LOW);
+}
 
 /**
  * dialogueAvecClient
