@@ -28,7 +28,10 @@ serveur: serveur.o
 	gcc serveur.o -o serveur -lwiringPi
 
 client: client.o
-	gcc client.o -o client
+	gcc client.o -o client -lwiringPi
 
 clean:
 	rm -rf envoi alarme_v1 alarme_v2 serveur client
+
+cleanAll:
+	rm -rf envoi.o envoi alarme_v1.o alarme_v1 alarme_v2.o alarme_v2 serveur.o serveur client.o client

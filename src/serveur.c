@@ -17,9 +17,6 @@ int pidAlarme;
 //Broche LED sortie -> 15 = 3
 const int PIN15 = 3;
 
-//Broche LED entrée -> 16 = 4
-const int PIN16 = 4;
-
 int main(){
 
     int sockEcoute, sockDialogue, retour;
@@ -28,33 +25,35 @@ int main(){
     //creation socket ecoute, association adressage et mise en ecoute
     sockEcoute = createSocketEcoute(IP_SVC,PORT_SVC);
 
+    //initialisation des différentes variables (pid alarme, ports GPIO...)
     CHECK(retour = setupAlarme(),"Probleme setup alarme");
     wiringPiSetup();
     setup();
 
     //Boucle de service
     while(1){
-       //Acceptation d'un appel 
+       //Acceptation d'un appel
         sockDialogue = acceptConnect(sockEcoute);
 	// creation processus de service pour le client appelant
-		CHECK(pidClt = fork(),"Probleme creation thread");
-		if(pidClt == 0){
-			//fermeture socket ecoute
-			close(sockEcoute);
-			//Dialogue avec un client
+	CHECK(pidClt = fork(),"Probleme creation fork");
+	if(pidClt == 0){
+		//fermeture socket ecoute
+		close(sockEcoute);
+		//Dialogue avec un client
         	dialogueAvecClt(sockDialogue);
-        	//Fermeture socket dialogue 
+        	//Fermeture socket dialogue
         	close(sockDialogue);
 
-			exit(0);
-		}
+		exit(0);
+	}
 
-		//Fermeture socket dialogue 
+	//Fermeture socket dialogue
         close(sockDialogue);
 
     }
     //fermeture socket ecoute
-	close(sockEcoute);
+    close(sockEcoute);
+
     return 0;
 }
 
@@ -117,10 +116,9 @@ void lireRequete(int sockDial, requete *req){
 	buffer_t b;
 
 	memset(b, 0, MAX_BUFFER);
-	CHECK(nbCarLus=read(sockDial, b, MAX_BUFFER), "Probleme lecture req");
+	CHECK(nbCarLus=read(sockDial, b, MAX_BUFFER), "Probleme lecture requete");
 	str2req(b, req);
-	printf("message requete (lg=%4d : #%s#\n envoyé", strlen(b), b);
-	printf("\t code = #%ui#, msg = #%s# \n", req->code, req->msg);
+	printf("Requete reçue: code = #%u#, msg = #%s# \n", req->code, req->msg);
 
 }
 
@@ -128,16 +126,15 @@ void lireRequete(int sockDial, requete *req){
 /*
 ** Serialize la reponse et envoie la reponse via la socket de dialogue
 */
-void ecrireRequete(int sockDial,reponse *rep){
+void ecrireReponse(int sockDial,reponse *rep){
 
 	buffer_t b;
 
 	memset(b, 0, MAX_BUFFER);
 	rep2str(rep, b);
 
-	CHECK(write(sockDial, b, strlen(b)+1), "Probleme ecriture rep");
-	printf("message reponse (lg=%4d : #%s#\n", strlen(b), b);
-	printf("\t code = #%ui#, msg = #%s# \n", rep->code, rep->msg);
+	CHECK(write(sockDial, b, strlen(b)+1), "Probleme ecriture reponse");
+	printf("Reponse envoyée code = #%u#, msg = #%s# \n", rep->code, rep->msg);
 
 }
 
@@ -146,15 +143,17 @@ void ecrireRequete(int sockDial,reponse *rep){
  * Activation/désactivation alarme
  */
 void traiterRequete100(requete req, reponse *rep, int* modeSecurite){
-	sprintf(rep->msg, "Reponse a la requette %u", req.code);
+
 	rep->code = req.code + 10;
 
 	if(*modeSecurite==1){
 		kill(pidAlarme, SIGUSR2);
 		*modeSecurite = 0;
+		sprintf(rep->msg,"Desactivation");
 	}else{
 		kill(pidAlarme, SIGUSR1);
 		*modeSecurite = 1;
+		sprintf(rep->msg,"Activation");
 	}
 }
 
@@ -165,15 +164,16 @@ void traiterRequete100(requete req, reponse *rep, int* modeSecurite){
  */
 void traiterRequete200(requete req, reponse *rep, int* ledOn){
 
-	sprintf(rep->msg, "Reponse a la requete %u", req.code);
 	rep->code = req.code + 10;
 
 	if(*ledOn==1){
 		digitalWrite(PIN15,LOW);
 		*ledOn = 0;
+		sprintf(rep->msg,"OFF");
 	}else{
 		digitalWrite(PIN15,HIGH);
 		*ledOn = 1;
+		sprintf(rep->msg,"ON");
 	}
 }
 
@@ -190,15 +190,6 @@ void traiterRequete(requete req, reponse *rep, int* modeSecurite, int* ledOn){
 		traiterRequete100(req, rep, modeSecurite);
 		return;
 	}
-
-	/*for(i=0;i<sizeof(REQ2REP)/sizeof(req2rep); i++){
-		if(req.code == REQ2REP[i].codeReq){
-			strcpy(rep->msg, REQ2REP[i].msgRep);
-			//REQ2REP[i].stmt(req,rep);
-		}
-	}*/
-
-
 }
 
 /**
@@ -227,7 +218,6 @@ int setupAlarme(void){
 void setup(void){
 
 	pinMode(PIN15, OUTPUT);
-	pinMode(PIN16, INPUT);
 	//Make sure it is already at LOW
 	digitalWrite(PIN15, LOW);
 }
@@ -250,7 +240,7 @@ void dialogueAvecClt(int sockDial){
 		lireRequete(sockDial, &req);
 		if(req.code ==0) break;
 		traiterRequete(req, &rep, &modeSecurite, &ledOn);
-		ecrireRequete(sockDial, &rep);
+		ecrireReponse(sockDial, &rep);
 	}
 
 }

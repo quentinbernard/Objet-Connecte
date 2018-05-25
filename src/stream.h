@@ -24,7 +24,7 @@
 #define MAX_BUFFER 1024
 
 
-#define IP_SVC "172.22.201.72"
+#define IP_SVC  "192.168.1.22"
 #define PORT_SVC 5000
 
 #define MAX_CLTS 5

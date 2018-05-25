@@ -24,9 +24,9 @@
 //Broche 24 -> 10
 //Broche 26 -> 11
 
-// Sortie sur broche 
-const int PIN7 = 7;
-const int PIN13 = 2;
+// Sortie sur broche
+const int PIN7 = 7; //bouton "détecteur de mouvement"
+const int PIN13 = 2; //alarme
 
 // Entrée sur broche
 const int PIN12 = 1;
