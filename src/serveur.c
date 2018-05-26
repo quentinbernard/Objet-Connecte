@@ -2,40 +2,73 @@
 ** Gestion multi client
 **
 */
-#include <wiringPi.h>
 #include "stream.h"
 
+//************Prototypes******************//
 int createSocketEcoute(char*,int);
 void dialogueAvecClt(int sockDial);
 int acceptConnect(int);
 int setupAlarme(void);
 void setup(void);
+void traitement_signal(int num);
+void signaux_alarme(int num);
+void processAlarme(void);
 
+//******variables globales****************//
 //PID alarme
 int pidAlarme;
 
 //Broche LED sortie -> 15 = 3
 const int PIN15 = 3;
 
+//Broche bouton "détecteur de mouvement" sortie -> 7 = 7
+const int PIN7 = 7;
+
+//Broche bouton "détecteur de mouvement" entrée -> 12 = 1
+const int PIN12 = 1;
+
+//Broche alarme sortie -> 13 = 2
+const int PIN13 = 2;
+
+//****************************************//
+
 int main(){
 
     int sockEcoute, sockDialogue, retour;
-
+    sigset_t intmask;
+    struct sigaction handler;
     pid_t pidClt;
+
     //creation socket ecoute, association adressage et mise en ecoute
     sockEcoute = createSocketEcoute(IP_SVC,PORT_SVC);
 
-    //initialisation des différentes variables (pid alarme, ports GPIO...)
-    CHECK(retour = setupAlarme(),"Probleme setup alarme");
+    //initialisation des différentes variables (ports GPIO...)
     wiringPiSetup();
     setup();
+
+    //Initialise processus fils -> gestion mode sécurité (alarme)
+    CHECK(pidAlarme = fork(), "Probleme fork alarme\n");
+    if(pidAlarme == 0){
+	setupAlarme();
+	processAlarme();
+
+	exit(0);
+    }
+
+    //Préparation capture des signaux du processus père
+    handler.sa_handler = traitement_signal;
+    CHECK(sigemptyset(&intmask), "Problème appel sigemptyset (processus père)\n");
+    handler.sa_flags=SA_RESTART;
+
+    //Capture des signaux
+    CHECK(sigaction(SIGINT, &handler, NULL), "Capture de SIGINT ratée\n");
 
     //Boucle de service
     while(1){
        //Acceptation d'un appel
         sockDialogue = acceptConnect(sockEcoute);
 	// creation processus de service pour le client appelant
-	CHECK(pidClt = fork(),"Probleme creation fork");
+	CHECK(pidClt = fork(),"Probleme fork client\n");
 	if(pidClt == 0){
 		//fermeture socket ecoute
 		close(sockEcoute);
@@ -198,17 +231,48 @@ void traiterRequete(requete req, reponse *rep, int* modeSecurite, int* ledOn){
 */
 int setupAlarme(void){
 
-	FILE * fp=NULL;
-	//récupération pid alarme
-	fp = fopen("alarme.pid","r");
-	if(fp==NULL){
-		printf("Erreur, fichier alarme.pid manquant\n");
-		return -1;
-	}
+	sigset_t intmask_alarme;
+	struct sigaction handler_alarme;
 
-	fscanf(fp,"%d\n",&pidAlarme);
-	printf("PID de l'alarme: %d\n",pidAlarme);
+	printf("Setup alarme\n");
+
+	//Préparation capture des signaux
+	handler_alarme.sa_handler = signaux_alarme;
+	CHECK(sigemptyset(&intmask_alarme), "Problème appel sigemptyset alarme\n");
+	handler_alarme.sa_flags=SA_RESTART;
+
+	//capture des signaux
+	CHECK(sigaction(SIGUSR1, &handler_alarme, NULL), "Capture SIGUSR1 ratée\n");
+	CHECK(sigaction(SIGUSR2, &handler_alarme, NULL), "Capture SIGUSR2 ratée\n");
+
+	//Préparation broches
+	//Bouton "détecteur de mouvement"
+	pinMode(PIN7, OUTPUT);
+	pinMode(PIN12, INPUT);
+
+	//Alarme
+	pinMode(PIN13, OUTPUT);
+
+	//Etre sûr sorties alarme + bouton à 0
+	digitalWrite(PIN13, LOW);
+	digitalWrite(PIN7, LOW);
+
 	return 0;
+}
+
+/**
+ * processAlarme
+ * Processus du mode de sécurité (alarme)
+ */
+void processAlarme(void){
+
+	while(1){
+		if(digitalRead(PIN12>0)){
+			digitalWrite(PIN13, HIGH);
+		}else{
+			digitalWrite(PIN13, LOW);
+		}
+	}
 }
 
 /**
@@ -221,6 +285,8 @@ void setup(void){
 	//Make sure it is already at LOW
 	digitalWrite(PIN15, LOW);
 }
+
+
 
 /**
  * dialogueAvecClient
@@ -238,7 +304,6 @@ void dialogueAvecClt(int sockDial){
 
 	while(1){
 		lireRequete(sockDial, &req);
-		if(req.code ==0) break;
 		traiterRequete(req, &rep, &modeSecurite, &ledOn);
 		ecrireReponse(sockDial, &rep);
 	}
@@ -261,5 +326,42 @@ int acceptConnect(int sockEcoute){
     printf("SRV[%i] : %s\tClient %s:%4i is connected with server %s:%4i using socket %i\n",getpid(),ctime(&now),inet_ntoa(clt.sin_addr),htons(clt.sin_port),inet_ntoa(server.sin_addr),htons(server.sin_port),sock);
 
     return sock;
+}
+
+/**
+ * signaux_alarme
+ * Fonction de traitement des signaux capturés pour l'alarme
+ */
+void signaux_alarme(int num){
+
+	printf("[signaux_alarme] Réception signal %d\n", num);
+
+	switch(num){
+	case SIGUSR1:
+		printf("[signaux_alarme] SIGUSR1 reçu, mode de sécurité activé\n");
+		digitalWrite(PIN7, HIGH);
+	break;
+	case SIGUSR2:
+		printf("[signaux_alarme] SIGUSR2 reçu, mode de sécurité désactivé\n");
+		digitalWrite(PIN7, LOW);
+	break;
+	}
+}
+
+/**
+ * traitement_signal
+ * Fonction de traitement des signaux capturés pas le processus père
+ */
+void traitement_signal(int num){
+
+	printf("[traitement_signal] Réception signal %d\n", num);
+
+	switch(num){
+	case SIGINT:
+		printf("[traitement_signal] SIGINT reçu, fin des processus...\n]");
+		kill(pidAlarme, SIGINT);
+		exit(0);
+	break;
+	}
 }
 

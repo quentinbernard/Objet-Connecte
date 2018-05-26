@@ -4,7 +4,6 @@
 */
 
 #include "stream.h"
-#include <wiringPi.h>
 
 //****************Prototypes****************//
 int connectServer(char*,char*);
