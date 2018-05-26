@@ -15,16 +15,16 @@ void handling(int num);
 
 //*********Varriables globales***************//
 //Broche sortie bouton1
-const int PIN22 = 6;
+const int PIN15 = 3;
 
 //Broche entrée bouton1
-const int PIN23 = 14;
+const int PIN16 = 4;
 
 //Broche sortie bouton2
-const int PIN24 = 22;
+const int PIN12 = 1;
 
 //Broche entrée bouton2
-const int PIN26 = 23;
+const int PIN13 = 2;
 
 //pid processus fils
 //mis en var globales pour la fonction de capture des signaux
@@ -132,10 +132,10 @@ void dialogueAvecServButton1(int sock){
 
 	while(1){
 
-		if(digitalRead(PIN26)){
+		if(digitalRead(PIN16)){
 		   //Lecture du front descendant pour éviter l'envoi
 		   //de plusieurs requêtes à la fois
-		   if(!digitalRead(PIN26)){
+		   if(!digitalRead(PIN16)){
 			req.code = 100;
 			sprintf(req.msg, "Mode securite");
 			req2str(req, b);
@@ -171,10 +171,10 @@ void dialogueAvecServButton2(int sock){
 	int nbCarLus;
 
 	while(1){
-		if(digitalRead(PIN23)){
+		if(digitalRead(PIN13)){
 		   //Lecture d'un front descendant pour éviter
 		   //l'envoi de plusieurs requêtes si l'on reste appuyé longtemps
-		   if(!digitalRead(PIN23)){
+		   if(!digitalRead(PIN13)){
 			req.code = 200;
 			sprintf(req.msg, "LED");
 			req2str(req, b);
@@ -204,14 +204,14 @@ void dialogueAvecServButton2(int sock){
 void setup(void){
 
 	//Bouton 1
-	pinMode(PIN22, OUTPUT);
-	pinMode(PIN23, INPUT);
-	digitalWrite(PIN22, HIGH);
+	pinMode(PIN15, OUTPUT);
+	pinMode(PIN16, INPUT);
+	digitalWrite(PIN15, HIGH);
 
 	//Bouton 2
-	pinMode(PIN24, OUTPUT);
-	pinMode(PIN26, INPUT);
-	digitalWrite(PIN24, HIGH);
+	pinMode(PIN12, OUTPUT);
+	pinMode(PIN13, INPUT);
+	digitalWrite(PIN12, HIGH);
 }
 
 /**
