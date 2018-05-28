@@ -24,8 +24,8 @@ const int PIN15 = 3;
 //Broche bouton "détecteur de mouvement" sortie -> 7 = 7
 const int PIN7 = 7;
 
-//Broche bouton "détecteur de mouvement" entrée -> 12 = 1
-const int PIN12 = 1;
+//Broche bouton "détecteur de mouvement" entrée -> 16 = 4
+const int PIN16 = 0;
 
 //Broche alarme sortie -> 13 = 2
 const int PIN13 = 2;
@@ -248,7 +248,7 @@ int setupAlarme(void){
 	//Préparation broches
 	//Bouton "détecteur de mouvement"
 	pinMode(PIN7, OUTPUT);
-	pinMode(PIN12, INPUT);
+	pinMode(PIN16, INPUT);
 
 	//Alarme
 	pinMode(PIN13, OUTPUT);
@@ -267,10 +267,8 @@ int setupAlarme(void){
 void processAlarme(void){
 
 	while(1){
-		if(digitalRead(PIN12>0)){
+		if(digitalRead(PIN16>0)){
 			digitalWrite(PIN13, HIGH);
-		}else{
-			digitalWrite(PIN13, LOW);
 		}
 	}
 }
@@ -344,6 +342,9 @@ void signaux_alarme(int num){
 	case SIGUSR2:
 		printf("[signaux_alarme] SIGUSR2 reçu, mode de sécurité désactivé\n");
 		digitalWrite(PIN7, LOW);
+		//On ne coupe l'alarme que sur le signal de
+		//désactivation du mode de sécurité
+		digitalWrite(PIN13, LOW);
 	break;
 	}
 }
