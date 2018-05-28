@@ -63,4 +63,9 @@ make
 
 cp /usr/lib/libwiringPi.so $RPI_ROOT/usr/lib/
 
+echo "Compilation des fichiers sources"
 
+$CCROISE serveur.c -o serveur
+cp serveur $RPI_ROOT/bin
+
+echo "/bin/serveur &" >> $ZERO_ROOT/etc/init.d/rcS

@@ -73,6 +73,13 @@ make
 
 cp /usr/lib/libwiringPi.so $ZERO_ROOT/usr/lib/
 
+echo "Compilation des fichiers sources"
 
+$CCROISE client.c -o client
+cp client $ZERO_ROOT/bin
+
+echo -ne "Adresse IP du serveur ?"
+read ip
+echo "/bin/client $ip 5000 &" >> $ZERO_ROOT/etc/init.d/rcS
 
 
