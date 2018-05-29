@@ -104,6 +104,8 @@ void main(){
 pid_t pid;
 FILE * fp;
 
+system("touch read.pid");
+
 //Sauvegarde du pid dans le fichier "read.pid"
 pid = getpid();
 fp = fopen("read.pid","w");
