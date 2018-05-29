@@ -1,4 +1,4 @@
-#include <stdio.h>
+﻿#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -107,7 +107,7 @@ FILE * fp;
 //Sauvegarde du pid dans le fichier "read.pid"
 pid = getpid();
 fp = fopen("read.pid","w");
-fprintf(fp,"%d\n",pid);
+fprintf(fp,"%d",pid);
 fclose(fp);
 
 // Setup de wiringPi
