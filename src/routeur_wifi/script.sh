@@ -12,7 +12,8 @@ fi
 echo "Penser à configurer le clavier en francais par le menu preferences/RPIconfiguration/Localisation/Keyboard"
 
 echo "Installation dnsmasq hostapd"
-apt-get install dnsmasq hostapd
+apt-get -y install dnsmasq python python-dev
+apt-get install hostapd -yqq
 
 
 echo "Configuration Wifi"
