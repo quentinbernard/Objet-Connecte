@@ -1,6 +1,6 @@
 #!/bin/bash
 
-RPI_ROOT=/mnt/rpi-root
+RPI_ROOT=/mnt/root-rpi
 
 SCRIPT_PATH=$(pwd)
 BUILD=$SCRIPT_PATH/build
@@ -8,9 +8,14 @@ SRC=$SCRIPT_PATH/src
 DATA=$SCRIPT_PATH/data
 
 #PATH du script de configuration de la wifi
-CONF_WIFI=$DATA/script
+CONF_WIFI=$SRC/routeur_wifi
 
-$CONF_WIFI
+#Modification du rc.local afin de lancer le script de configuration du wi-fi au démarrage
+cp -R $CONF_WIFI $RPI_ROOT/home/pi
+chmod +x /$RPI_ROOT/home/pi/routeur_wifi/script.sh
+cp $DATA/rc.local $RPI_ROOT/etc/rc.local
+echo "rc.local copié"
+cat $RPI_ROOT/home/pi/routeur_wifi/interfaces
 
 echo -ne "Installer compilateur croisé ? [y-N]"
 read REP

@@ -45,7 +45,7 @@ iface eth0 inet dhcp
 
 allow-hotplug wlan0  
 iface wlan0 inet static  
-	  address 172.24.1.1
+	  address 172.24.1.10
 	  netmask 255.255.255.0
 	  network 172.24.1.0
 	  broadcast 172.24.1.255
@@ -65,7 +65,7 @@ interface=wlan0
 driver=nl80211
 
 # This is the name of the network
-ssid=metalo
+ssid=fredzer
 
 # Use the 2.4GHz band
 hw_mode=g
@@ -120,7 +120,7 @@ vi /etc/dnsmasq.conf
 interface=wlan0
 
 # Explicitly specify the address to listen on
-listen-address=172.24.1.1
+listen-address=172.24.1.10
 
 # Bind to the interface to make sure we aren't sending things elsewhere
 bind-interfaces
