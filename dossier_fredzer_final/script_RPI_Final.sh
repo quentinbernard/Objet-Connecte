@@ -1,6 +1,8 @@
 #!/bin/bash
 
-RPI_ROOT=/mnt/rpi-root
+DEV=/dev/sdc
+RPI_BOOT=/media/eleve/boot
+RPI_ROOT=/media/eleve/rootfs
 
 SCRIPT_PATH=$(pwd)
 BUILD=$SCRIPT_PATH/build
@@ -78,7 +80,7 @@ CONF_WIFI=$SRC/routeur_wifi
 #Modification du rc.local afin de lancer le script de configuration du wi-fi au démarrage
 cp -R $CONF_WIFI $RPI_ROOT/home/pi
 chmod +x /$RPI_ROOT/home/pi/routeur_wifi/script.sh
-cp $DATA/rc.local $RPI_ROOT/etc/rc.local
+cp $DATA/rc.local.serveur $RPI_ROOT/etc/rc.local
 
 ################# Wiring PI ########################
 
@@ -108,7 +110,7 @@ cp -r $DATA/SPI-Py $RPI_ROOT/home/pi
 
 echo "Activation du spi"
 #On dé-commente la ligne pour activer le spi
-sed -i '/dtparam=spi/s/^#//g' /boot/config.txt 
+sed -i '/dtparam=spi/s/^#//g' $RPI_BOOT/config.txt 
 
 cp $SRC/read.c $RPI_ROOT/home/pi
 
