@@ -1,0 +1,170 @@
+#!/bin/bash
+
+# paramètres par défaut
+DEV=/dev/sdc
+ZERO_BOOT=/mnt/zero-boot
+ZERO_ROOT=/mnt/zero-root
+
+SCRIPT_PATH=$(pwd)
+BUILD=$SCRIPT_PATH/build
+SRC=$SCRIPT_PATH/src
+DATA=$SCRIPT_PATH/data
+
+############Préparation#######################"##########
+
+# 1) Suis-je root ? (uid = 0)
+uid=`grep $USER /etc/passwd | awk -F: '{ print $3 }'`
+if [ $uid -ne 0 ] #ou [ $(id -ru) -ne 0 ]
+then
+ echo "Il faut être root"
+ exit 1
+fi
+
+
+# 2) Valider le périphérique à utiliser
+dmesg | grep "sd" | tail
+
+# afficher les derniers messages du noyau
+# demande la saisie ou confirmation du périphérique à l'utilisateur
+
+echo -ne "Utiliser $DEV ? [Y-n]"
+read REP
+if [ "$REP" == 'N' -o "$REP" == 'n' ]; then
+
+ echo -n "Périphérique à utiliser ? (/dev/...)"
+ read DEV
+
+fi
+
+
+# Première partition du périphérique
+DEVBOOT=${DEV}1
+DEVROOT=${DEV}2
+
+
+#Message de résumé : périphérique / partition
+clear
+echo "Utilisation de $DEVBOOT pour le boot et de $DEVROOT pour le root"
+read pause
+
+# 4) Faut-il monter ?
+clear
+echo "Montages actuels pour $DEV :"
+df -h|grep $DEV
+
+echo -ne "Monter $DEVBOOT en tant que $ZERO_BOOT [y-N] ? "
+read REP
+if [ "$REP" == 'Y' -o "$REP" == 'y' ]; then
+
+ mkdir -p $ZERO_BOOT
+ mount $DEVBOOT $if [ "$REP" == "y" -o "$REP" == "Y" ];then
+    #Copie archive source
+    cp $SRC/wiringPi-*.tar.gz $BUILD/wiringPi-*.tar.gz
+
+    cd $BUILD
+    #extraction archive
+    tar -xzf wiringPi-*.tar.gz 
+    rm wiringPi-*.tar.gz
+    WIRING_PI_DIR=`ls $BUILD | grep wiringPi-*`
+fi
+
+cd $BUILD/$WIRING_PI_DIR
+export CC=$CCROISE
+./buildZERO_BOOT
+
+
+ # Message de résumé : df -h
+ df -h|grep $DEV
+
+fi
+
+echo -ne "Monter $DEVROOT en tant que $ZERO_ROOT [y-N] ? "
+read REP
+if [ "$REP" == 'Y' -o "$REP" == 'y' ]; then
+
+ mkdir -p $ZERO_ROOT
+ mount $DEVROOT $ZERO_ROOT
+
+ # Message de résumé : df -h
+ df -h|grep $DEV
+
+fi
+
+#################Point D'Accès Wifi###################
+
+#Fichiers de configuration du point d'accès
+WPA_CONF=$DATA/wpa_supplicant.conf
+INTERFACES_CONF=$DATA/interfaces
+
+echo "Configuration connexion au point d'accès..."
+chmod a+x $WPA_CONF
+chmod a+x $INTERFACES_CONF
+
+cp $WPA_CONF $ZERO_ROOT/etc/wpa_supplicant/wpa_supplicant.conf
+cp $INTERFACES_CONF $ZERO_ROOT/etc/network/interfaces
+
+echo "Configuration point d'accès Wifi terminée, appuyez pour continuer"
+read pause
+clear
+######################################################
+
+echo -ne "Installer compilateur croisé ? [y-N]"
+read REP
+if [ "$REP" == "y" -o "$REP" == "Y" ];then
+if [ ! -d $BUILD/tools-master ];then
+  # copier busybox dans le rép. build depuis src
+  cp $SRC/tools-master.zip $BUILD/
+ 
+  # changer le rép. courant
+  cd $BUILD
+
+  # décompacter
+  unzip tools-master.zip
+  rm tools-master.zip
+
+ else
+  echo "Répertoire Tools-master déjà présent"
+ fi
+fi
+
+#Variables du compilateur croisé
+BIN_CC=$SCRIPT_PATH/build/tools-master/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin
+export CCROISE=$BIN_CC/arm-linux-gnueabihf-gcc
+CC_SYSROOT=$($CCROISE -print-sysroot)
+PREFIX_CC=$BIN_CC/arm-linux-gnueabihf-
+
+# Contenu du rep root sur la carte SD (rpi-root)
+mkdir -p $ZERO_ROOT/lib
+cp $CC_SYSROOT/lib/ld-linux-armhf.so.3 $ZERO_ROOT/lib
+cp $CC_SYSROOT/lib/arm-linux-gnueabihf/* $ZERO_ROOT/lib
+
+echo "Installation compilateur croisé terminée, appuyez pour continuer"
+read pause
+clear
+###########################################################
+
+echo "Installation de la librairie WiringPi"
+#wiringPi
+echo -ne "Désarchiver la librairie WiringPi ? [y-N]"
+read REP
+if [ "$REP" == "y" -o "$REP" == "Y" ];then
+    #Copie archive source
+    cp $SRC/wiringPi-*.tar.gz $ZERO_ROOT/home/pi/wiringPi-*.tar.gz
+    cp $DATA/installWiringPi.sh $ZERO_ROOT/home/pi/
+fi
+
+echo "Installation wiringPi terminée, appuyez pour continuer"
+read pause
+clear
+
+#############################################################
+
+echo "Compilation des fichiers sources"
+cd $SRC
+cp client.c $ZERO_ROOT/home/pi
+cp stream.h $ZERO_ROOT/home/pi
+
+cp $DATA/installClient.sh $ZERO_ROOT/home/pi/
+cp $DATA/rc.local.zero $ZERO_ROOT/etc/rc.local
+
+
