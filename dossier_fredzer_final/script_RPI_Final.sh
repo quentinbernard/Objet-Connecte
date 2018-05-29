@@ -108,6 +108,7 @@ echo "Activation du spi"
 sed -i '/dtparam=spi/s/^#//g' $RPI_BOOT/config.txt 
 
 cp $SRC/read.c $RPI_ROOT/home/pi
+cp $SRC/Read.py $RPI_ROOT/home/pi
 
 cp $DATA/installServeur.sh $RPI_ROOT/home/pi/
 cp $DATA/rc.local.serveur $RPI_ROOT/etc/rc.local

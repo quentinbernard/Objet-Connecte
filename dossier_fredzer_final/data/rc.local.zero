@@ -19,7 +19,7 @@ chmod a+x /home/pi/installWiringPi.sh
 chmod a+x /home/pi/installClient.sh
 sudo /home/pi/installClient.sh
 
-/home/pi/client 172.24.1.1 5000
+/home/pi/client 172.24.1.9 5000
 
 exit 0
 
