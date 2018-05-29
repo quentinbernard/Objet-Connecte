@@ -13,8 +13,8 @@ echo "Penser à configurer le clavier en francais par le menu preferences/RPIcon
 
 echo "Installation dnsmasq hostapd"
 apt-get -y install dnsmasq python python-dev
+apt-get remove --purge hostapd
 apt-get install hostapd -yqq
-
 
 echo "Configuration Wifi"
 
