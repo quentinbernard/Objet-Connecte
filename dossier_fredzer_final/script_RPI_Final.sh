@@ -86,13 +86,8 @@ cp $DATA/rc.local.serveur $RPI_ROOT/etc/rc.local
 
 echo "Installation de la librairie WiringPi"
 #wiringPi
-echo -ne "Désarchiver la librairie WiringPi ? [y-N]"
-read REP
-if [ "$REP" == "y" -o "$REP" == "Y" ];then
-    #Copie archive source
-    cp $SRC/wiringPi-*.tar.gz $RPI_ROOT/home/pi/wiringPi.tar.gz
-    cp $DATA/installWiringPi.sh $RPI_ROOT/home/pi/
-fi
+cp $SRC/wiringPi-*.tar.gz $RPI_ROOT/home/pi/wiringPi.tar.gz
+cp $DATA/installWiringPi.sh $RPI_ROOT/home/pi/
 
 echo "Installation wiringPi terminée, appuyez pour continuer"
 read pause
@@ -106,7 +101,7 @@ cp serveur.c $RPI_ROOT/home/pi
 cp stream.h $RPI_ROOT/home/pi
 
 echo "Installation de SPI Py"
-cp -r $DATA/SPI-Py $RPI_ROOT/home/pi
+cp -R $DATA/SPI-Py $RPI_ROOT/home/pi
 
 echo "Activation du spi"
 #On dé-commente la ligne pour activer le spi

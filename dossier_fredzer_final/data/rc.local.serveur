@@ -13,6 +13,10 @@
 
 /home/pi/routeur_wifi/script.sh
 
+#Compilation wiringPi
+chmod a+x /home/pi/installWiringPi.sh
+/home/pi/installWiringPi.sh
+
 #Compilation serveur
 chmod a+x /home/pi/installServeur.sh
 /home/pi/installServeur.sh
