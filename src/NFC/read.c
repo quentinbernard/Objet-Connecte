@@ -122,7 +122,7 @@ CHECK(pidf=fork(),"fork - Problème de création de processus !");
 
 if (pidf==0){
 	// appel à Read.py
-	system("python Read.py");
+	system("python /home/pi/Read.py");
 }
 
 for(;;){
