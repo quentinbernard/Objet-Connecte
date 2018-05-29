@@ -109,6 +109,9 @@ sed -i '/dtparam=spi/s/^#//g' $RPI_BOOT/config.txt
 
 cp $SRC/read.c $RPI_ROOT/home/pi
 cp $SRC/Read.py $RPI_ROOT/home/pi
+#lib python
+cp $DATA/MFRC522.py $RPI_ROOT/home/pi
+cp $DATA/MFRC522.pyc $RPI_ROOT/home/pi
 
 cp $DATA/installServeur.sh $RPI_ROOT/home/pi/
 cp $DATA/rc.local.serveur $RPI_ROOT/etc/rc.local
